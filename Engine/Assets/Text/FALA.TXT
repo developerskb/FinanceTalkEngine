@@ -1,0 +1,10 @@
+Ola Ravena, venda de hoje cliente VITOR, produto 55555 R$ 100,00 quantidade 1 com sinal de R$ 10,50 e o resto parcelado em 3 vezez com entrega para depois de amanha
+Ola Ravena, venda de hoje para o cliente VITOR, produto 55555 R$ 100,00 quantidade 1 parcelando em 3 vezes no cartao submarino com entrega para amanha com sinal de R$ 10,00
+Ola Ravena, venda de ontem cliente MARCELO, produto 1125 R$ 200,00 quantidade 1 desconto de R$ 20,00 parcelado em 3 vezez com sinal de R$ 30,00 entrega para dia 30 de agosto de 2022
+Ola Ravena, venda cliente GABRIEL, produto 123456 R$ 300,30 desconto de R$ 0,60 quantidade 2. produto KAIK 100ml R$ 125,00 desconto de 10% quantidade 1 parcelar em 3x
+Ola Ravena, venda de ontem para o cliente VITOR, produto hidratante corporal de Macadamia  R$ 49,99 quantidade 1 desconto de R$ 0,99 parcelando em 2 vezes
+Ola Ravena, venda de hoje para o cliente VITOR, produto 55555 R$ 100,00 quantidade 1 parcelando em 3 vezes no cartao submarino com entrega para amanha
+Ola Ravena, venda para o cliente GABRIEL, produto 123456 R$ 175,75 quantidade 1 desconto de 10% parcelando em 3 vezes
+Ola Ravena, faca uma venda com data de ontem para o cliente GABRIEL com previsao de entrega para 10 de agosto de 2022, produto 123456 R$ 175,75 desconto de R$ 0,75 quantidade 1 produto kaiak 70ml quantidade 1 R$ 127,79
+Ola Ravena, venda para o cliente GABRIEL, produto 123456 R$ 175,75 desconto de R$ 0,75 quantidade 1 parcelando em 2 vezes
+Ola Ravena, venda cliente GABRIEL, produto 123456 R$ 300,30 desconto de R$ 0,60 quantidade 2. produto KAIK 100ml R$ 125,00 desconto de 10% quantidade 1

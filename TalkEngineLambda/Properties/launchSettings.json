@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "TalkEngineLambda": {
+      "commandName": "Project"
+    },
+    "DebugProfile": {
+      "commandName": "Executable",
+      "executablePath": "%USERPROFILE%\\.dotnet\\tools\\dotnet-lambda-test-tool-8.0.exe",
+      "commandLineArgs": "--port 5551",
+      "workingDirectory": ".\\bin\\$(Configuration)\\net8.0"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +10,8 @@ namespace Engine.Model
     {
         public string Usuario { get; init; }
         public string Frase { get; init; }
+        public List<Cartao> Cartoes { get; init; }
+        public List<ContaBancaria> Contas { get; init; }
         // public Datetime Data { get; init; }
 
     }

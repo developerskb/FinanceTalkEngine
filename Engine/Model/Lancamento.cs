@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +8,9 @@ namespace Engine.Model
 {
     public class Lancamento
     {
+        private List<Cartao> cartoesCadastrados;
+        private List<ContaBancaria> contasCadastradas;
+        public List<ContaBancaria> Contas { get; set; } = new List<ContaBancaria>();
         public string Frase { get; set; }
         public string FraseConvertida { get; set; }
         public string FraseHavena { get; set; }
@@ -43,8 +46,10 @@ namespace Engine.Model
 
         }
 
-        public Lancamento(string frase, string usuario)
+        public Lancamento(string frase, string usuario, List<Cartao> cartoes = null, List<ContaBancaria> contas = null)
         {
+            cartoesCadastrados = cartoes;
+            contasCadastradas = contas;
             Frase = frase;
             Usuario = $"{usuario.ToUpper()[0]}{usuario.Substring(1).ToLower()}";
             FraseConvertida = frase.ToUpper();
@@ -70,7 +75,12 @@ namespace Engine.Model
             LancamentoData = LancamentoData.BuscarData();
             Formas = TipoFormas.IdentificarFormas(FraseConvertida);
             TipoPessoas = TipoPessoa.IdentificarTipoPessoa(FraseConvertida);
-            Cartoes = Cartao.IdentificarCartoes(FraseConvertida);
+            var formaConta = Formas.Any(f => f.Nome == "PIX" || f.Nome == "DEBITO" || f.Nome == "TRANSFERENCIA");
+            var formaCartao = Formas.Any(f => f.Nome == "CARTAO");
+            Contas = !formaCartao || formaConta
+                ? ContaBancaria.IdentificarContas(FraseConvertida, contasCadastradas)
+                : new List<ContaBancaria>();
+            Cartoes = formaConta ? new List<Cartao>() : Cartao.IdentificarCartoes(FraseConvertida, cartoesCadastrados);
             Operacoes = Operacao.IdentificarOperacoes(FraseConvertida);
             Rateio = TipoRateio.EncontrarRateio(FraseConvertida);
 

@@ -1,4 +1,4 @@
-﻿using Amazon.Lambda.APIGatewayEvents;
+using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 // using Amazon.Lambda.Serialization.Json;
 using System.Net;
@@ -24,7 +24,7 @@ namespace TalkEngineLambda
             LambdaRequest lambdaBody = JsonSerializer.Deserialize<LambdaRequest>(request.Body, serializationOptions);
 
 
-            Lancamento frase = new Lancamento(lambdaBody.Frase, lambdaBody.Usuario);
+            Lancamento frase = new Lancamento(lambdaBody.Frase, lambdaBody.Usuario, lambdaBody.Cartoes, lambdaBody.Contas);
             frase.ProcessarFrase();
             string fraseTexto = frase.ToString();
             var body = new

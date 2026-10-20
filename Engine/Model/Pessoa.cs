@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +8,40 @@ namespace Engine.Model
 {
     public class Pessoa: BaseModel
     {
+        public int? PessoaId { get; set; }
+        public bool IdentificacaoPendente { get; set; }
+
+        public static List<Pessoa> IdentificarPessoas(string frase, string usuario, bool eHavena, List<Pessoa> cadastradas)
+        {
+            if (cadastradas == null || eHavena) return IdentificarPessoas(frase, usuario, eHavena);
+            string Normalizar(string texto) => System.Text.RegularExpressions.Regex.Replace(
+                new string((texto ?? "").Normalize(NormalizationForm.FormD)
+                    .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) !=
+                        System.Globalization.UnicodeCategory.NonSpacingMark).ToArray()).ToUpperInvariant(),
+                @"[^\p{L}\p{N}]+", " ").Trim();
+            var texto = " " + Normalizar(frase) + " ";
+            bool Contem(string nome) => !string.IsNullOrWhiteSpace(nome) && texto.Contains(" " + nome + " ");
+            var validas = cadastradas.Where(p => p != null && p.PessoaId > 0 && !string.IsNullOrWhiteSpace(p.Nome))
+                .GroupBy(p => p.PessoaId).Select(g => g.First()).ToList();
+            var encontradas = new List<Pessoa>();
+            foreach (var p in validas) {
+                var nome = Normalizar(p.Nome);
+                var primeiro = nome.Split(' ')[0];
+                var termo = Contem(nome) && validas.Count(outro => Normalizar(outro.Nome) == nome) == 1 ? nome :
+                    primeiro.Length >= 3 && Contem(primeiro) &&
+                    validas.Count(outro => Normalizar(outro.Nome).Split(' ')[0] == primeiro) == 1 ? primeiro : "";
+                if (termo == "") continue;
+                encontradas.Add(new Pessoa { PessoaId = p.PessoaId, Id = p.PessoaId.Value,
+                    Nome = p.Nome, TipoPessoaId = p.TipoPessoaId, Index = texto.IndexOf(" " + termo + " ", StringComparison.Ordinal) });
+            }
+            if (encontradas.Count == 0) {
+                bool ambiguo = validas.Any(p => Contem(Normalizar(p.Nome)) ||
+                    Contem(Normalizar(p.Nome).Split(' ')[0]));
+                encontradas.Add(new Pessoa { Nome = ambiguo ? "Selecione a pessoa" : usuario,
+                    Id = ambiguo ? 0 : 1, Index = 0, IdentificacaoPendente = ambiguo });
+            }
+            return encontradas.OrderBy(p => p.Index).ToList();
+        }
         public int TipoPessoaId { get; set; }
 
         public static List<Pessoa> GetPessoas(string usuario)

@@ -24,7 +24,7 @@ namespace TalkEngineLambda
             LambdaRequest lambdaBody = JsonSerializer.Deserialize<LambdaRequest>(request.Body, serializationOptions);
 
 
-            Lancamento frase = new Lancamento(lambdaBody.Frase, lambdaBody.Usuario, lambdaBody.Cartoes, lambdaBody.Contas);
+            Lancamento frase = new Lancamento(lambdaBody.Frase, lambdaBody.Usuario, lambdaBody.Cartoes, lambdaBody.Contas, lambdaBody.Pessoas, lambdaBody.Categorias, lambdaBody.SubCategorias);
             frase.ProcessarFrase();
             string fraseTexto = frase.ToString();
             var body = new

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,6 +49,10 @@ namespace Engine.Model
             result.Add(new Operacao { Nome = "EMPRESTIMO", Id = 53, Tipo = "C" }); // Operacao dupla
             result.Add(new Operacao { Nome = "DEVENDO", Id = 54, Tipo = "D" }); // Operacao dupla
 
+            foreach (var verbo in new[] { "GASTOU", "GASTAMOS", "PAGUEI", "PAGOU", "PAGAMOS", "COMPROU" })
+                result.Add(new Operacao { Nome = verbo, Tipo = "D" });
+            foreach (var verbo in new[] { "RECEBEU", "GANHOU" })
+                result.Add(new Operacao { Nome = verbo, Tipo = "C" });
             return result;
         }
     

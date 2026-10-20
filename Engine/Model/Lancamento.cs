@@ -8,6 +8,9 @@ namespace Engine.Model
 {
     public class Lancamento
     {
+        private List<CategoriaCadastro> categoriasCadastradas;
+        private List<SubCategoriaCadastro> subcategoriasCadastradas;
+        private List<Pessoa> pessoasCadastradas;
         private List<Cartao> cartoesCadastrados;
         private List<ContaBancaria> contasCadastradas;
         public List<ContaBancaria> Contas { get; set; } = new List<ContaBancaria>();
@@ -46,8 +49,11 @@ namespace Engine.Model
 
         }
 
-        public Lancamento(string frase, string usuario, List<Cartao> cartoes = null, List<ContaBancaria> contas = null)
+        public Lancamento(string frase, string usuario, List<Cartao> cartoes = null, List<ContaBancaria> contas = null, List<Pessoa> pessoas = null, List<CategoriaCadastro> categorias = null, List<SubCategoriaCadastro> subcategorias = null)
         {
+            categoriasCadastradas = categorias;
+            subcategoriasCadastradas = subcategorias;
+            pessoasCadastradas = pessoas;
             cartoesCadastrados = cartoes;
             contasCadastradas = contas;
             Frase = frase;
@@ -64,9 +70,25 @@ namespace Engine.Model
             FraseConvertida = Valor.ResolveFraseCentavos(Frase);
 
             Valores = Valor.BuscarValores(FraseConvertida);
+            Classificacao classificacaoUnica = null;
+            if (categoriasCadastradas != null) {
+                for (int v = 0; v < Valores.Count; v++) {
+                    int inicio = v == 0 ? 0 : Valores[v].Index;
+                    int fim = v + 1 < Valores.Count ? Valores[v + 1].Index : FraseConvertida.Length;
+                    Valores[v].Classificacao = Classificacao.Identificar(FraseConvertida.Substring(inicio, fim - inicio),
+                        categoriasCadastradas, subcategoriasCadastradas);
+                }
+                if (Valores.Count == 1) classificacaoUnica = Valores[0].Classificacao;
+            }
             ReceitasDespesas = ReceitaDespesa.IdentificarDespesas(FraseConvertida);
             // Passa o usuário caso não encontre pessoas na frase
-            Pessoas = Pessoa.IdentificarPessoas(FraseConvertida, Usuario, eHavena);
+            if (categoriasCadastradas != null) {
+                ReceitasDespesas = Valores.Select(v => new ReceitaDespesa {
+                    Nome = v.Classificacao?.CategoriaNome ?? "N.IDENT.", Tipo = v.Classificacao?.Tipo ?? "D", Index = v.Index
+                }).ToList();
+                if (ReceitasDespesas.Count == 0) ReceitasDespesas.Add(new ReceitaDespesa { Nome = "N.IDENT.", Tipo = "D" });
+            }
+            Pessoas = Pessoa.IdentificarPessoas(FraseConvertida, Usuario, eHavena, pessoasCadastradas);
             Datas = TipoData.IdentificarDatas(FraseConvertida);
 
             DataSinal = Datas.Max(data => data.Data);
@@ -75,7 +97,7 @@ namespace Engine.Model
             LancamentoData = LancamentoData.BuscarData();
             Formas = TipoFormas.IdentificarFormas(FraseConvertida);
             TipoPessoas = TipoPessoa.IdentificarTipoPessoa(FraseConvertida);
-            var formaConta = Formas.Any(f => f.Nome == "PIX" || f.Nome == "DEBITO" || f.Nome == "TRANSFERENCIA");
+            var formaConta = Formas.Any(f => f.Nome == "PIX" || f.Nome == "DEBITO" || f.Nome == "TRANSFERENCIA") || System.Text.RegularExpressions.Regex.IsMatch(FraseConvertida, @"\bCONTA\b");
             var formaCartao = Formas.Any(f => f.Nome == "CARTAO");
             Contas = !formaCartao || formaConta
                 ? ContaBancaria.IdentificarContas(FraseConvertida, contasCadastradas)
@@ -239,6 +261,7 @@ namespace Engine.Model
             {
                 Valores.Add(new Valor
                 {
+                    Classificacao = classificacaoUnica,
                     ValorLancamento = parcela.Valor,
                     Index = index,
                 });

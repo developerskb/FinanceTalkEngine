@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +10,7 @@ namespace Engine.Model
 {
     public class Valor: BaseModel
     {
+        public Classificacao Classificacao { get; set; }
         public decimal ValorLancamento { get; set; }        
 
         static List<string> GetTagsCentavos()
@@ -290,64 +291,27 @@ namespace Engine.Model
         // Buscando todos os valores da frase
         public static List<Valor> BuscarValores(string frase)
         {
-            var result = new List<Valor>();
-
-            string regExpInteiro = @"(DESCONTO (DE |)|)(\b(R\$ |R\$|(GASTEI) )|[A-Z]{0}[$])\b[1-9]+[0-9]*";
-            string regExpValor = @"(DESCONTO (DE |)|)(\b(R\$ |R\$|(GASTEI) )|[A-Z]{0}[$])\b(\d+|\d{1,3}(.\d{3})*)(\,\d+)";
-            string regExpIntDecimal = @"\d+,?\d{0,2}";
-            //converter decimal com ','
-            System.Globalization.CultureInfo fp = new System.Globalization.CultureInfo("pt-BR");
-
-            /*var matchDecimalInt = Regex.Matches(frase, regExpInteiro);
-
-            if(matchDecimalInt.Count > 0)
-            {
-                foreach(Match match in matchDecimalInt)
-                {
-                    var reais = Convert.ToDecimal(match.Value.Replace("R$", "").Trim(), fp);
-                    result.Add(new Valor { ValorLancamento = reais, Index = match.Index });
-                }
-            }*/
-
-            var matchReais = Regex.Matches(frase, regExpValor);
-            if (matchReais.Count > 0)
-            {
-                foreach (Match match in matchReais)
-                {
-                    if (!(match.Value.Contains("DESCONTO") || match.Value.Contains("DESCONTO DE")))
-                    {
-                        var reais = Convert.ToDecimal(match.Value.Replace("R$", "").Replace("GASTEI", "").Replace("$","").Trim(), fp);
-                        // aqui ele vai substituir o valor para uma mascara
-                        // para não ter problemas de repetir o mesmo valor
-                        var index = frase.IndexOf(match.Value);
-                        var len = match.Value.Length;
-                        frase = Stuff(frase, index, len, new String('.', len));
-                        // frase.Substring(index, match.Value.Length);
-
-                        result.Add(new Valor { ValorLancamento = reais, Index = match.Index });
-                    }
-                }
+            var verbos = string.Join("|", Operacao.GetOperacoes().Select(o => o.Nome.Trim())
+                .Where(v => !string.IsNullOrWhiteSpace(v)).Distinct().OrderByDescending(v => v.Length).Select(Regex.Escape));
+            const string numero = @"(?:\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[,.]\d{1,2})?)";
+            // Só extrai valores com contexto monetário: moeda, verbo financeiro ou sufixo reais.
+            var padrao = @"(?<!\w)(?:(?<desconto>DESCONTO(?: DE)?\s+)?(?:R\$\s*|\$\s*|(?:" + verbos +
+                @")\s+(?:R\$\s*|\$\s*)?))(?<valor>" + numero + @")(?!\d|[.,]\d|/)(?:\s+REA(?:IS|L)\b)?" +
+                @"|(?<![\d.,/])(?<valor>" + numero + @")\s+REA(?:IS|L)\b";
+            var resultado = new List<Valor>();
+            foreach (Match match in Regex.Matches(frase ?? "", padrao, RegexOptions.IgnoreCase)) {
+                var antes = (frase ?? "").Substring(0, match.Index);
+                if (match.Groups["desconto"].Success ||
+                    Regex.IsMatch(antes, @"\bDESCONTO(?:\s+DE)?\s*$", RegexOptions.IgnoreCase)) continue;
+                var texto = match.Groups["valor"].Value;
+                var cultura = texto.Contains(",") ? System.Globalization.CultureInfo.GetCultureInfo("pt-BR")
+                    : System.Globalization.CultureInfo.InvariantCulture;
+                if (!texto.Contains(",") && Regex.IsMatch(texto, @"^\d{1,3}(?:\.\d{3})+$")) texto = texto.Replace(".", "");
+                if (!decimal.TryParse(texto, System.Globalization.NumberStyles.Number, cultura, out var valor) ||
+                    valor > 9999999999999.99m) continue;
+                resultado.Add(new Valor { ValorLancamento = valor, Index = match.Index });
             }
-
-            var matchInts = Regex.Matches(frase, regExpInteiro);
-            if (matchInts.Count > 0)
-            {
-                foreach (Match match in matchInts)
-                {
-                    var t = match.Value;
-                    // Não consegui implementar com o regex para que ele ignorasse a frase caso começasse
-                    // com DESCONTO OU DESCONTO DE então faço a verificação manual
-                    if(!(t.Contains("DESCONTO") || t.Contains("DESCONTO DE")))
-                    {
-                        var reais = Convert.ToDecimal(match.Value.Replace("R$", "").Replace("GASTEI", "").Replace("$", "").Trim(), fp);
-                        result.Add(new Valor { ValorLancamento = reais, Index = match.Index });
-                    }
-                }
-            }
-
-            result = result.OrderBy(r => r.Index).ToList();
-
-            return result;
+            return resultado.OrderBy(v => v.Index).ToList();
         }
     }
 }

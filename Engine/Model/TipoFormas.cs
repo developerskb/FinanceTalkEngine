@@ -17,6 +17,7 @@ namespace Engine.Model
             result.Add(new TipoFormas { Nome = "DEBITO", Id = 2 });
             result.Add(new TipoFormas { Nome = "PIX", Id = 2 });
             result.Add(new TipoFormas { Nome = "TRANSFERENCIA", Id = 2 });
+            result.Add(new TipoFormas { Nome = "CONTA", Id = 2 });
             return result;
         }
 
